@@ -1,0 +1,210 @@
+import xml.etree.ElementTree as ET
+import os
+
+DB_FILE = "witcher.xml"
+
+def create_sample_xml():
+    """Створює файл XML з початковими даними."""
+    data = """<?xml version="1.0" encoding="UTF-8"?>
+<lore>
+    <character id="1">
+        <name>Ґеральт з Рівії</name>
+        <class>Відьмак</class>
+        <affiliation>Школа Вовка</affiliation>
+        <age>98</age>
+    </character>
+    <character id="2">
+        <name>Цирілла (Цирі)</name>
+        <class>Відьмачка</class>
+        <affiliation>Старша Кров</affiliation>
+        <age>21</age>
+    </character>
+    <character id="3">
+        <name>Єнніфер з Венґерберґа</name>
+        <class>Чародійка</class>
+        <affiliation>Ложа Чародійок</affiliation>
+        <age>100</age>
+    </character>
+    <character id="4">
+        <name>Лютик</name>
+        <class>Бард</class>
+        <affiliation>Оксенфурт</affiliation>
+        <age>40</age>
+    </character>
+    <character id="6">
+        <name>Вернон Роше</name>
+        <class>Командир</class>
+        <affiliation>Сині Смуги (Темерія)</affiliation>
+        <age>38</age>
+    </character>
+    <character id="8">
+        <name>Лара Доррен</name>
+        <class>Знаюча</class>
+        <affiliation>Народ Вільх (Втікачка)</affiliation>
+        <age>30</age>
+    </character>
+    <character id="9">
+        <name>Ередін Бреак Ґлас</name>
+        <class>Король</class>
+        <affiliation>Дикий Гін</affiliation>
+        <age>600</age>
+    </character>
+    <character id="10">
+        <name>Емгир вар Емрейс</name>
+        <class>Імператор</class>
+        <affiliation>Нільфгаард</affiliation>
+        <age>55</age>
+    </character>
+    <character id="11">
+        <name>Королева Каланте</name>
+        <class>Королева</class>
+        <affiliation>Цинтра</affiliation>
+        <age>48</age>
+    </character>
+    <character id="12">
+        <name>Весемір</name>
+        <class>Відьмак</class>
+        <affiliation>Школа Вовка</affiliation>
+        <age>350</age>
+    </character>
+    <character id="13">
+        <name>Лето з Гулети</name>
+        <class>Відьмак</class>
+        <affiliation>Школа Змії</affiliation>
+        <age>45</age>
+    </character>
+    <character id="14">
+        <name>Герд</name>
+        <class>Відьмак</class>
+        <affiliation>Школа Ведмедя</affiliation>
+        <age>80</age>
+    </character>
+</lore>
+"""
+    with open(DB_FILE, "w", encoding="utf-8") as f:
+        f.write(data)
+
+def load_data(filename):
+    """Завантаження даних з файлу."""
+    try:
+        tree = ET.parse(filename)
+        return tree.getroot()
+    except (FileNotFoundError, ET.ParseError):
+        print("Помилка: Файл не знайдено або він пошкоджений.")
+        return None
+
+def display_characters(root):
+    """Вивід таблиці персонажів."""
+    print(f"\n{'№':<4} {'Ім\'я':<25} {'Клас':<22} {'Приналежність':<25} {'Вік':<5}")
+    print("-" * 85)
+    
+    for char in root.findall('character'):
+        print(f"{char.get('id'):<4} {char.find('name').text:<25} "
+              f"{char.find('class').text:<22} {char.find('affiliation').text:<25} "
+              f"{char.find('age').text:<5}")
+
+def filter_by_age(root, max_age):
+    """Пошук персонажів за віком."""
+    found_chars = []
+    print(f"\nПерсонажі молодше {max_age} років:")
+    
+    for char in root.findall('character'):
+        try:
+            age = int(char.find('age').text)
+            if age <= max_age:
+                found_chars.append({
+                    'name': char.find('name').text,
+                    'class': char.find('class').text,
+                    'age': age,
+                    'affiliation': char.find('affiliation').text
+                })
+        except ValueError:
+            continue 
+
+    if found_chars:
+        for c in found_chars:
+            print(f"- {c['name']} ({c['class']}) - {c['age']} р.")
+    else:
+        print("Нікого не знайдено.")
+    
+    return found_chars
+
+def calculate_avg_age(root):
+    """Розрахунок середнього віку."""
+    total_age = 0
+    count = 0
+    for char in root.findall('character'):
+        try:
+            total_age += int(char.find('age').text)
+            count += 1
+        except ValueError:
+            continue
+    
+    if count > 0:
+        result_text = f"Середній вік персонажів у базі: {total_age / count:.1f} років"
+        print(f"\n{result_text}")
+        return result_text
+    else:
+        print("Неможливо порахувати.")
+        return None
+
+def save_to_txt(data):
+    """Збереження результатів у файл."""
+    if not data:
+        print("Нічого зберігати.")
+        return
+    
+    filename = "zvit_witcher.txt"
+    try:
+        with open(filename, "a", encoding="utf-8") as f:
+            f.write("\n-------------------------------\n")
+            
+            if isinstance(data, list):
+                f.write("Звіт: Результат пошуку\n")
+                for c in data:
+                    f.write(f"{c['name']} | {c['class']} | {c['affiliation']} | {c['age']} років\n")
+            else:
+                f.write("Звіт: Аналіз даних\n")
+                f.write(str(data) + "\n")
+                
+        print(f"Дані дописано у файл '{filename}'")
+    except IOError:
+        print("Помилка запису файлу.")
+
+def main():
+    """Основна логіка програми (меню)."""
+    create_sample_xml()
+    root = load_data(DB_FILE)
+    
+    if root is None:
+        return
+
+    last_result = []
+    
+    while True:
+        print("\n=== THE WITCHER ===")
+        print("1. Всі персонажі")
+        print("2. Фільтр за віком")
+        print("3. Середній вік")
+        print("4. Зберегти результат")
+        print("0. Вихід")
+        
+        choice = input(">>> ")
+        
+        if choice == "1":
+            display_characters(root)
+        elif choice == "2":
+            try:
+                val = int(input("Введіть вік: "))
+                last_result = filter_by_age(root, val)
+            except ValueError:
+                print("Потрібно ввести число!")
+        elif choice == "3":
+            last_result = calculate_avg_age(root)
+        elif choice == "4":
+            save_to_txt(last_result)
+        elif choice == "0":
+            break
+
+if __name__ == "__main__":
+    main()
