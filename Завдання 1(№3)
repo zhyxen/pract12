@@ -1,0 +1,33 @@
+from bs4 import BeautifulSoup
+
+try:
+    print("Зчитування файлу inventory.xml...")
+    
+    # Відкриваємо файл як звичайний текст
+    with open('inventory.xml', 'r', encoding='utf-8') as file:
+        content = file.read()
+
+    soup = BeautifulSoup(content, "xml")
+    
+    print("-" * 30)
+    
+    # Знаходимо всі теги <item>
+    items = soup.find_all('item')
+    
+    print(f"Успішно розпізнано {len(items)} об'єктів:")
+    
+    # Перебираємо знайдені елементи
+    for item in items:
+        name_text = item.find('name').text
+        
+        # Можна також легко дістати атрибут (категорію)
+        category = item.get('category')
+        
+        print(f" - {name_text} (Категорія: {category})")
+
+    print("-" * 30)
+
+except ImportError:
+    print("Помилка: Введіть у терміналі 'pip install beautifulsoup4'")
+except Exception as e:
+    print(f"Помилка: {e}")
