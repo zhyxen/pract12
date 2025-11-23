@@ -1,0 +1,29 @@
+import xml.etree.ElementTree as ET
+
+# КРОК 1: Завантаження файлу
+try:
+    tree = ET.parse('inventory.xml')
+    root = tree.getroot()
+
+    print(f"Відкрито файл: inventory.xml")
+    print("-" * 30)
+
+    # КРОК 2: Пошук товарів дорожчих за 100 грн
+    count = 0
+    
+    for item in root.findall('item'):
+        # Отримуємо текст з тегів name та price
+        name = item.find('name').text
+        price = int(item.find('price').text) # Перетворюємо текст у число
+
+        if price > 100:
+            print(f"Дорогий товар: {name} — {price} грн")
+            count += 1
+
+    print("-" * 30)
+    print(f"Всього знайдено: {count}")
+
+except FileNotFoundError:
+    print("Помилка: Файл inventory.xml не знайдено!")
+except Exception as e:
+    print(f"Помилка коду: {e}")
