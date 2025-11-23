@@ -1,0 +1,24 @@
+from lxml import etree
+
+try:
+    # Завантажуємо файл
+    tree = etree.parse('inventory.xml')
+    
+    print("Файл завантажено. Виконуємо XPath запит...")
+    print("-" * 40)
+    # XPath запит:
+    # //item                 -> шукаємо всі теги item
+    # [@category='electronics'] -> де атрибут category дорівнює 'electronics'
+    # /name/text()           -> беремо текст із тегу name
+    query = "//item[@category='electronics']/name/text()"
+    
+    results = tree.xpath(query)
+    
+    print(f"Результат фільтрації (electronics):")
+    print(results)
+    print("-" * 40)
+
+except ImportError:
+    print("Помилка: Бібліотека lxml не встановлена! Введіть 'pip install lxml'")
+except Exception as e:
+    print(f"Помилка: {e}")
